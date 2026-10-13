@@ -1,0 +1,2164 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Reading the Runway</title>
+    <meta
+      name="description"
+      content="A data story about how Vogue Runway reviews couture, ready-to-wear, menswear and pre-collections, based on 13,983 reviews from FashionDB."
+    />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Jost:wght@300;400;500&display=swap"
+      rel="stylesheet"
+    />
+    <style>
+      /* ===== Colours and fonts: change these to restyle the whole page ===== */
+      :root {
+        --paper: #ffffff;
+        --ink: #000000;
+        --muted: #6b6b6b;
+        --rule: #e5e5e5;
+        --soft: #f4f4f4;
+        --night: #000000;
+        --night-ink: #ffffff;
+        --night-muted: #9a9a9a;
+        --couture: #9e2a3a;
+        --rtw: #2563a8;
+        --menswear: #2e8a57;
+        --pre: #c08a12;
+        --display: "Jost", "Helvetica Neue", Helvetica, Arial, sans-serif;
+        --body: "Helvetica Neue", Helvetica, Arial, sans-serif;
+      }
+      * {
+        box-sizing: border-box;
+      }
+      html {
+        scroll-behavior: smooth;
+      }
+      body {
+        margin: 0;
+        background: var(--paper);
+        color: var(--ink);
+        font-family: var(--body);
+        font-size: 17px;
+        line-height: 1.6;
+      }
+      a {
+        color: inherit;
+      }
+      img {
+        max-width: 100%;
+        display: block;
+      }
+
+      /* ----- Top bar ----- */
+      .bar {
+        position: sticky;
+        top: 0;
+        z-index: 20;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        gap: 18px;
+        flex-wrap: wrap;
+        padding: 18px 40px;
+        background: var(--night);
+        color: var(--night-ink);
+        border-bottom: 1px solid #222;
+      }
+      .brand {
+        font-family: var(--display);
+        font-weight: 500;
+        letter-spacing: 0.2em;
+        font-size: 17px;
+        text-decoration: none;
+      }
+      .nav {
+        display: flex;
+        gap: 26px;
+        flex-wrap: wrap;
+      }
+      .nav a {
+        font-family: var(--display);
+        font-size: 11.5px;
+        letter-spacing: 0.18em;
+        text-transform: uppercase;
+        text-decoration: none;
+        color: var(--night-muted);
+        padding-bottom: 5px;
+        border-bottom: 1px solid transparent;
+      }
+      .nav a:hover {
+        color: var(--night-ink);
+      }
+      .nav a[aria-current="page"] {
+        color: var(--night-ink);
+        border-color: var(--night-ink);
+      }
+
+      /* ----- Chapters ----- */
+      .chapter {
+        display: none;
+      }
+      .chapter.on {
+        display: block;
+      }
+      .opener {
+        background: var(--night);
+        color: var(--night-ink);
+        text-align: center;
+        padding: 110px 40px 100px;
+      }
+      .opener.short {
+        padding: 80px 40px 70px;
+      }
+      .wrap {
+        max-width: 1120px;
+        margin: 0 auto;
+        padding: 72px 40px;
+      }
+      .narrow {
+        max-width: 760px;
+        margin-left: auto;
+        margin-right: auto;
+      }
+
+      .kick {
+        font-family: var(--display);
+        font-weight: 500;
+        font-size: 12px;
+        letter-spacing: 0.22em;
+        text-transform: uppercase;
+        color: var(--muted);
+        text-align: center;
+      }
+      .opener .kick {
+        color: var(--night-muted);
+      }
+      h1,
+      h2,
+      h3 {
+        font-family: var(--display);
+        font-weight: 300;
+        text-transform: uppercase;
+        margin: 0;
+      }
+      h1 {
+        font-size: clamp(32px, 4.4vw, 60px);
+        letter-spacing: 0.04em;
+        line-height: 1.12;
+        margin: 18px auto 22px;
+        max-width: 980px;
+      }
+      h2 {
+        font-size: clamp(24px, 3vw, 40px);
+        letter-spacing: 0.05em;
+        line-height: 1.25;
+        text-align: center;
+        margin: 14px auto 36px;
+        max-width: 900px;
+      }
+      h3 {
+        font-size: 15px;
+        letter-spacing: 0.18em;
+        font-weight: 500;
+        margin: 0 0 12px;
+      }
+      .dek {
+        font-size: 19px;
+        line-height: 1.6;
+        color: var(--muted);
+        max-width: 680px;
+        margin: 0 auto 26px;
+        text-align: center;
+      }
+      .opener .dek {
+        color: var(--night-muted);
+      }
+      .for {
+        font-family: var(--display);
+        font-size: 12px;
+        letter-spacing: 0.16em;
+        text-transform: uppercase;
+      }
+      .for span {
+        color: var(--night-muted);
+        margin-right: 8px;
+      }
+      .lead {
+        font-size: 19px;
+        line-height: 1.65;
+        max-width: 760px;
+        margin: 0 auto 18px;
+        text-align: center;
+      }
+
+      /* ----- Numbers ----- */
+      .stats {
+        display: grid;
+        grid-template-columns: repeat(3, 1fr);
+        gap: 30px;
+      }
+      .stat {
+        border-top: 1px solid var(--rule);
+        padding-top: 16px;
+      }
+      .num {
+        font-family: var(--display);
+        font-weight: 300;
+        font-size: 64px;
+        line-height: 1;
+      }
+      .lbl {
+        font-family: var(--display);
+        font-size: 11.5px;
+        letter-spacing: 0.14em;
+        text-transform: uppercase;
+        color: var(--muted);
+        margin-top: 8px;
+        line-height: 1.55;
+      }
+      .pop {
+        font-family: var(--display);
+        font-size: 11.5px;
+        color: #8a8a8a;
+        text-align: center;
+        margin-top: 22px;
+      }
+
+      /* ----- Cards and grids ----- */
+      .grid2 {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 40px;
+      }
+      .card {
+        border-top: 1px solid var(--ink);
+        padding-top: 16px;
+      }
+      .card p {
+        margin: 0 0 10px;
+      }
+      ul.clean {
+        list-style: none;
+        padding: 0;
+        margin: 0;
+      }
+      ul.clean li {
+        padding: 12px 0;
+        border-bottom: 1px solid var(--rule);
+      }
+      ul.clean li b {
+        font-weight: 600;
+      }
+
+      /* ----- Cleaning funnel and group sizes ----- */
+      .funnel {
+        display: flex;
+        justify-content: center;
+        align-items: flex-start;
+        gap: 24px;
+        flex-wrap: wrap;
+        text-align: center;
+        margin: 10px 0 0;
+      }
+      .funnel > div:not(.arrow) {
+        max-width: 230px;
+      }
+      .funnel .num {
+        font-size: 44px;
+      }
+      .arrow {
+        font-size: 28px;
+        color: var(--muted);
+        padding-top: 6px;
+      }
+      .sizes {
+        margin-top: 8px;
+      }
+      .size-row {
+        display: grid;
+        grid-template-columns: 150px 1fr 70px;
+        gap: 14px;
+        align-items: center;
+        padding: 8px 0;
+        font-family: var(--display);
+        font-size: 13px;
+        letter-spacing: 0.06em;
+      }
+      .size-bar {
+        height: 14px;
+        background: var(--soft);
+      }
+      .size-bar i {
+        display: block;
+        height: 100%;
+      }
+      .size-row .n {
+        text-align: right;
+        font-variant-numeric: tabular-nums;
+      }
+
+      /* ----- Findings ----- */
+      .finding {
+        display: grid;
+        grid-template-columns: 1.25fr 1fr;
+        gap: 44px;
+        align-items: center;
+        padding: 56px 0;
+        border-top: 1px solid var(--rule);
+      }
+      .finding:first-of-type {
+        border-top: 0;
+      }
+      .finding.flip {
+        grid-template-columns: 1fr 1.25fr;
+      }
+      .finding.flip figure {
+        order: 2;
+      }
+      .finding figure {
+        margin: 0;
+      }
+      .finding figcaption {
+        font-family: var(--display);
+        font-size: 11.5px;
+        color: var(--muted);
+        margin-top: 10px;
+        letter-spacing: 0.04em;
+      }
+      .qnum {
+        font-family: var(--display);
+        font-size: 12px;
+        letter-spacing: 0.22em;
+        text-transform: uppercase;
+        color: var(--muted);
+        margin-bottom: 10px;
+      }
+      .finding h3 {
+        font-size: 24px;
+        font-weight: 300;
+        letter-spacing: 0.05em;
+        line-height: 1.3;
+        margin-bottom: 16px;
+      }
+      .placeholder {
+        display: none;
+        aspect-ratio: 16/10;
+        background: var(--soft);
+        border: 1px dashed #bdbdbd;
+        align-items: center;
+        justify-content: center;
+        text-align: center;
+        padding: 20px;
+        font-family: var(--display);
+        font-size: 12px;
+        letter-spacing: 0.12em;
+        text-transform: uppercase;
+        color: #8a8a8a;
+      }
+      .placeholder.show {
+        display: flex;
+      }
+
+      .quotes {
+        display: grid;
+        grid-template-columns: repeat(3, 1fr);
+        gap: 34px;
+        margin-top: 10px;
+      }
+      blockquote {
+        margin: 0;
+        font-family: var(--display);
+        font-weight: 300;
+        font-size: 22px;
+        line-height: 1.4;
+      }
+      .cite {
+        font-family: var(--display);
+        font-size: 11px;
+        letter-spacing: 0.16em;
+        text-transform: uppercase;
+        color: var(--muted);
+        margin-top: 12px;
+      }
+      .beforeafter {
+        display: flex;
+        justify-content: center;
+        gap: 40px;
+        flex-wrap: wrap;
+        margin: 20px 0 10px;
+        text-align: center;
+      }
+      .beforeafter .num {
+        font-size: 52px;
+      }
+
+      /* ----- Explore ----- */
+      .embed {
+        position: relative;
+        border: 1px solid var(--rule);
+        background: var(--soft);
+      }
+      .embed iframe {
+        display: block;
+        width: 100%;
+        height: 860px;
+        border: 0;
+      }
+      .video {
+        aspect-ratio: 16/9;
+      }
+      .video iframe {
+        width: 100%;
+        height: 100%;
+        border: 0;
+      }
+      .btn {
+        display: inline-block;
+        font-family: var(--display);
+        font-size: 12px;
+        letter-spacing: 0.18em;
+        text-transform: uppercase;
+        text-decoration: none;
+        border: 1px solid var(--ink);
+        padding: 12px 20px;
+        margin-top: 16px;
+      }
+      .btn:hover {
+        background: var(--ink);
+        color: var(--paper);
+      }
+      .tries {
+        counter-reset: t;
+        display: grid;
+        grid-template-columns: repeat(3, 1fr);
+        gap: 30px;
+        margin-top: 30px;
+      }
+      .tries div {
+        border-top: 1px solid var(--ink);
+        padding-top: 14px;
+      }
+      .tries div::before {
+        counter-increment: t;
+        content: "0" counter(t);
+        font-family: var(--display);
+        font-size: 12px;
+        letter-spacing: 0.2em;
+        color: var(--muted);
+        display: block;
+        margin-bottom: 8px;
+      }
+
+      .tries.four {
+        grid-template-columns: repeat(4, 1fr);
+      }
+      /* ----- A/B mock-up ----- */
+      .ab {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 34px;
+      }
+      .mock {
+        border: 1px solid var(--rule);
+      }
+      .mock-top {
+        background: var(--night);
+        color: var(--night-ink);
+        font-family: var(--display);
+        font-size: 11px;
+        letter-spacing: 0.2em;
+        text-transform: uppercase;
+        padding: 10px 14px;
+      }
+      .mock-body {
+        padding: 16px;
+      }
+      .mock-title {
+        font-family: var(--display);
+        font-size: 12px;
+        letter-spacing: 0.2em;
+        text-transform: uppercase;
+        text-align: center;
+        margin: 6px 0 14px;
+      }
+      .mock-search {
+        height: 26px;
+        border: 1px solid var(--rule);
+        margin-bottom: 12px;
+        font-family: var(--display);
+        font-size: 10.5px;
+        color: #9a9a9a;
+        padding: 5px 8px;
+        letter-spacing: 0.06em;
+      }
+      .chips {
+        display: flex;
+        gap: 6px;
+        flex-wrap: wrap;
+        margin-bottom: 12px;
+      }
+      .chips span {
+        font-family: var(--display);
+        font-size: 10px;
+        letter-spacing: 0.12em;
+        text-transform: uppercase;
+        border: 1px solid var(--ink);
+        padding: 4px 8px;
+      }
+      .chips span.on {
+        background: var(--ink);
+        color: var(--paper);
+      }
+      .chips-label {
+        font-family: var(--display);
+        font-size: 10px;
+        letter-spacing: 0.16em;
+        text-transform: uppercase;
+        color: var(--muted);
+        margin-bottom: 6px;
+      }
+      .tiles {
+        display: grid;
+        grid-template-columns: repeat(4, 1fr);
+        gap: 6px;
+      }
+      .tiles i {
+        aspect-ratio: 2/3;
+        background: #e9e9e9;
+      }
+      .ab-cap {
+        margin-top: 12px;
+      }
+      .ab-cap b {
+        font-family: var(--display);
+        font-size: 12px;
+        letter-spacing: 0.2em;
+        text-transform: uppercase;
+        font-weight: 500;
+      }
+      .predict {
+        font-family: var(--display);
+        font-weight: 300;
+        font-size: clamp(20px, 2.2vw, 28px);
+        line-height: 1.45;
+        text-align: center;
+        max-width: 900px;
+        margin: 0 auto;
+      }
+      .facts {
+        display: grid;
+        grid-template-columns: repeat(4, 1fr);
+        gap: 26px;
+      }
+      .facts div {
+        border-top: 1px solid var(--ink);
+        padding-top: 14px;
+      }
+      .facts p {
+        margin: 6px 0 0;
+        font-size: 15.5px;
+      }
+
+      /* ----- Footer and next links ----- */
+      .next {
+        display: block;
+        width: max-content;
+        margin: 56px auto 0;
+        font-family: var(--display);
+        font-size: 12px;
+        letter-spacing: 0.18em;
+        text-transform: uppercase;
+        text-decoration: none;
+        border-bottom: 1px solid currentColor;
+        padding-bottom: 4px;
+      }
+      footer {
+        background: var(--night);
+        color: var(--night-muted);
+        padding: 40px;
+        font-family: var(--display);
+        font-size: 12px;
+        letter-spacing: 0.06em;
+        line-height: 1.8;
+      }
+      footer .cols {
+        max-width: 1120px;
+        margin: 0 auto;
+        display: flex;
+        justify-content: space-between;
+        gap: 30px;
+        flex-wrap: wrap;
+      }
+      footer a {
+        color: var(--night-ink);
+      }
+
+      /* ----- Brief: hero ----- */
+      .opener.hero {
+        padding: 96px 40px 64px;
+      }
+      .hero-title {
+        font-family: var(--display);
+        font-weight: 300;
+        text-transform: uppercase;
+        letter-spacing: 0.1em;
+        line-height: 1;
+        font-size: clamp(40px, 8.4vw, 120px);
+        margin: 22px 0 18px;
+      }
+      .hero-q {
+        font-family: var(--display);
+        font-weight: 300;
+        font-size: clamp(17px, 1.9vw, 23px);
+        letter-spacing: 0.04em;
+        color: var(--night-muted);
+        margin: 0 auto 64px;
+      }
+      .vocab {
+        max-width: 900px;
+        margin: 0 auto;
+        border-top: 1px solid #2a2a2a;
+      }
+      .v-row {
+        display: grid;
+        grid-template-columns: 1fr auto 1.25fr 70px;
+        align-items: baseline;
+        gap: 22px;
+        padding: 18px 0;
+        border-bottom: 1px solid #2a2a2a;
+        text-align: left;
+      }
+      .v-type {
+        font-family: var(--display);
+        font-size: 13px;
+        letter-spacing: 0.2em;
+        text-transform: uppercase;
+        justify-self: end;
+        padding-left: 16px;
+        position: relative;
+      }
+      .v-type::before {
+        content: "";
+        position: absolute;
+        left: 0;
+        top: 50%;
+        width: 8px;
+        height: 8px;
+        margin-top: -4px;
+        background: var(--c);
+      }
+      .v-as {
+        font-family: var(--body);
+        font-style: italic;
+        font-size: 15px;
+        color: var(--night-muted);
+      }
+      .v-word {
+        white-space: nowrap;
+        font-family: var(--display);
+        font-weight: 300;
+        font-size: clamp(26px, 3.4vw, 44px);
+        text-transform: uppercase;
+        letter-spacing: 0.05em;
+        line-height: 1;
+      }
+      .v-pct {
+        font-family: var(--display);
+        font-size: 22px;
+        font-weight: 300;
+        text-align: right;
+        font-variant-numeric: tabular-nums;
+      }
+      .v-note {
+        font-family: var(--display);
+        font-size: 11.5px;
+        letter-spacing: 0.04em;
+        color: var(--night-muted);
+        margin: 14px auto 0;
+      }
+      .ctas {
+        display: flex;
+        gap: 14px;
+        justify-content: center;
+        flex-wrap: wrap;
+        margin-top: 40px;
+      }
+      .btn.light {
+        background: var(--night-ink);
+        color: var(--night);
+        border-color: var(--night-ink);
+      }
+      .btn.light:hover {
+        background: transparent;
+        color: var(--night-ink);
+      }
+      .btn.ghost {
+        color: var(--night-ink);
+        border-color: #555;
+      }
+      .btn.ghost:hover {
+        background: var(--night-ink);
+        color: var(--night);
+      }
+      .scope {
+        display: grid;
+        grid-template-columns: repeat(4, 1fr);
+        max-width: 900px;
+        margin: 84px auto 18px;
+        text-align: left;
+      }
+      .scope div {
+        border-left: 1px solid #2a2a2a;
+        padding-left: 16px;
+      }
+      .scope b {
+        display: block;
+        font-family: var(--display);
+        font-weight: 300;
+        font-size: 30px;
+        line-height: 1.1;
+      }
+      .scope span {
+        font-family: var(--display);
+        font-size: 11px;
+        letter-spacing: 0.16em;
+        text-transform: uppercase;
+        color: var(--night-muted);
+      }
+      .strip {
+        display: flex;
+        gap: 2px;
+        max-width: 900px;
+        height: 10px;
+        margin: 0 auto;
+      }
+      .strip-key {
+        display: flex;
+        gap: 20px;
+        flex-wrap: wrap;
+        max-width: 900px;
+        margin: 10px auto 0;
+        font-family: var(--display);
+        font-size: 11px;
+        letter-spacing: 0.06em;
+        color: var(--night-muted);
+      }
+      .strip-key span::before {
+        content: "";
+        display: inline-block;
+        width: 8px;
+        height: 8px;
+        background: var(--c);
+        margin-right: 7px;
+      }
+
+      /* ----- Brief: one minute, what I built ----- */
+      .minute {
+        display: grid;
+        grid-template-columns: repeat(3, 1fr);
+        gap: 34px;
+        margin-top: 26px;
+      }
+      .minute > div {
+        border-top: 1px solid var(--ink);
+        padding-top: 14px;
+      }
+      .minute p {
+        margin: 0;
+      }
+      .m-step {
+        font-family: var(--display);
+        font-size: 12px;
+        letter-spacing: 0.2em;
+        text-transform: uppercase;
+        margin-bottom: 10px;
+        font-weight: 500;
+      }
+      .for.dark {
+        text-align: center;
+        margin-top: 40px;
+        color: var(--ink);
+      }
+      .for.dark span {
+        color: var(--muted);
+      }
+      .feature {
+        display: grid;
+        grid-template-columns: 1.5fr 1fr;
+        gap: 44px;
+        align-items: center;
+        text-decoration: none;
+        border: 1px solid var(--rule);
+        padding: 22px;
+      }
+      .feature:hover {
+        border-color: var(--ink);
+      }
+      .feature figure {
+        margin: 0;
+      }
+      /* Live dashboard preview: a desktop-sized app scaled down to fit, not clickable itself */
+      .feature figure.live {
+        position: relative;
+        aspect-ratio: 16/10;
+        overflow: hidden;
+        border: 1px solid var(--rule);
+        background: var(--soft);
+      }
+      .feature figure.live iframe {
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 1280px;
+        height: 800px;
+        border: 0;
+        transform-origin: 0 0;
+        pointer-events: none;
+      }
+      /* Full-screen dashboard, opened from the Brief's "Click to View" card */
+      .dash-full {
+        width: 100vw;
+        height: 100dvh;
+        max-width: none;
+        max-height: none;
+        margin: 0;
+        padding: 0;
+        border: 0;
+        background: var(--paper);
+      }
+      .dash-full::backdrop {
+        background: rgba(0, 0, 0, 0.6);
+      }
+      .dash-full .dash-bar {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        gap: 16px;
+        padding: 10px 18px;
+        padding-top: calc(10px + env(safe-area-inset-top, 0px));
+        border-bottom: 1px solid var(--rule);
+        font-family: var(--display);
+        font-size: 12px;
+        letter-spacing: 0.16em;
+        text-transform: uppercase;
+      }
+      .dash-full .dash-bar a,
+      .dash-full .dash-bar button {
+        font: inherit;
+        letter-spacing: inherit;
+        text-transform: inherit;
+        color: var(--ink);
+        background: none;
+        border: 0;
+        cursor: pointer;
+        text-decoration: none;
+        padding: 6px 0;
+      }
+      .dash-full iframe {
+        display: block;
+        width: 100%;
+        height: calc(100dvh - 48px - env(safe-area-inset-top, 0px));
+        border: 0;
+      }
+      .feature h3 {
+        font-size: 24px;
+        font-weight: 300;
+        letter-spacing: 0.05em;
+        line-height: 1.3;
+      }
+      .go {
+        display: inline-block;
+        margin-top: 14px;
+        font-family: var(--display);
+        font-size: 12px;
+        letter-spacing: 0.18em;
+        text-transform: uppercase;
+        border-bottom: 1px solid currentColor;
+      }
+      .built {
+        display: grid;
+        grid-template-columns: repeat(3, 1fr);
+        gap: 22px;
+        margin-top: 22px;
+      }
+      .built a {
+        display: block;
+        text-decoration: none;
+        border: 1px solid var(--rule);
+        padding: 22px 22px 18px;
+      }
+      .built a:hover {
+        border-color: var(--ink);
+      }
+      .built h3 {
+        font-size: 16px;
+        letter-spacing: 0.1em;
+        line-height: 1.4;
+      }
+      .built p {
+        margin: 0;
+        font-size: 15.5px;
+        color: #333;
+      }
+      .built .go {
+        border: 0;
+      }
+      .tools {
+        display: flex;
+        gap: 8px;
+        flex-wrap: wrap;
+        justify-content: center;
+        margin-top: 34px;
+      }
+      .tools span {
+        font-family: var(--display);
+        font-size: 11px;
+        letter-spacing: 0.14em;
+        text-transform: uppercase;
+        border: 1px solid var(--rule);
+        padding: 6px 11px;
+        color: var(--muted);
+      }
+
+      /* ----- Brief: overview ----- */
+      .intro {
+        margin-top: 22px;
+        border-top: 1px solid var(--ink);
+      }
+      .i-row {
+        display: grid;
+        grid-template-columns: 220px 1fr;
+        gap: 40px;
+        padding: 34px 0;
+        border-bottom: 1px solid var(--rule);
+      }
+      .i-lbl {
+        font-family: var(--display);
+        font-size: 13px;
+        letter-spacing: 0.2em;
+        text-transform: uppercase;
+        font-weight: 500;
+      }
+      .i-lbl span {
+        display: block;
+        font-weight: 300;
+        font-size: 34px;
+        letter-spacing: 0.02em;
+        color: var(--muted);
+        margin-bottom: 6px;
+      }
+      .i-body p {
+        margin: 0 0 14px;
+        max-width: 720px;
+      }
+      .aud {
+        list-style: none;
+        padding: 0;
+        margin: 0;
+        max-width: 720px;
+      }
+      .aud li {
+        padding: 0 0 10px;
+      }
+      .mini-stats {
+        display: flex;
+        gap: 40px;
+        flex-wrap: wrap;
+        margin: 22px 0 16px;
+      }
+      .mini-stats b {
+        display: block;
+        font-family: var(--display);
+        font-weight: 300;
+        font-size: 34px;
+        line-height: 1.1;
+      }
+      .mini-stats span {
+        font-family: var(--display);
+        font-size: 11px;
+        letter-spacing: 0.16em;
+        text-transform: uppercase;
+        color: var(--muted);
+      }
+      .i-body .sizes {
+        max-width: 620px;
+      }
+      .big-q {
+        font-family: var(--display);
+        font-weight: 300;
+        text-transform: uppercase;
+        font-size: clamp(20px, 2.2vw, 28px);
+        letter-spacing: 0.04em;
+        line-height: 1.35;
+      }
+      .subq {
+        margin: 0 0 18px;
+        padding-left: 22px;
+        max-width: 720px;
+      }
+      .subq li {
+        padding: 4px 0;
+      }
+
+      /* ----- Brief: objectives and the four types ----- */
+      .kick.strong {
+        color: var(--ink);
+        font-weight: 500;
+        letter-spacing: 0.26em;
+      }
+      .obj {
+        margin-top: 90px;
+        text-align: center;
+      }
+      .obj p {
+        font-size: 20px;
+        line-height: 1.65;
+        max-width: 820px;
+        margin: 18px auto 0;
+      }
+      .types {
+        display: grid;
+        grid-template-columns: repeat(4, 1fr);
+        gap: 40px;
+        margin-top: 22px;
+      }
+      .types > div {
+        border-top: 3px solid var(--c);
+        padding-top: 22px;
+      }
+      .types h3 {
+        font-size: 13px;
+        letter-spacing: 0.2em;
+        font-weight: 400;
+        margin-bottom: 14px;
+      }
+      .types p {
+        margin: 0 0 18px;
+        font-size: 17px;
+        line-height: 1.6;
+      }
+      .t-n {
+        font-family: var(--display);
+        font-size: 12px;
+        letter-spacing: 0.16em;
+        text-transform: uppercase;
+        color: var(--muted);
+      }
+
+      /* ----- Data: theme word lists ----- */
+      .theme-list {
+        display: grid;
+        grid-template-columns: repeat(4, 1fr);
+        gap: 28px 34px;
+        margin-top: 34px;
+      }
+      .theme-list div {
+        border-top: 1px solid var(--ink);
+        padding-top: 12px;
+      }
+      .theme-list h3 {
+        font-size: 13px;
+        margin-bottom: 8px;
+      }
+      .theme-list p {
+        margin: 0;
+        font-family: var(--display);
+        font-size: 14px;
+        color: #333;
+        line-height: 1.55;
+      }
+      .theme-list .note {
+        color: var(--muted);
+        font-size: 12.5px;
+      }
+
+      /* ----- Data: limitations ----- */
+      .limits {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 0 56px;
+        margin-top: 24px;
+      }
+      .limits li {
+        padding: 16px 0;
+      }
+
+      /* ----- Findings: labels inside each finding ----- */
+      .how {
+        font-family: var(--display);
+        font-size: 11px;
+        letter-spacing: 0.2em;
+        text-transform: uppercase;
+        color: var(--muted);
+        margin: 16px 0 6px;
+        font-weight: 500;
+      }
+      .finding p {
+        margin: 0 0 10px;
+      }
+      .q-note {
+        font-size: 15.5px;
+        color: #333;
+        margin: 12px 0 0;
+      }
+
+      .key {
+        font-family: var(--display);
+        font-size: 19px;
+        line-height: 1.45;
+        font-weight: 400;
+      }
+      .ctx {
+        font-size: 15px;
+        color: var(--muted);
+      }
+      .grid3 {
+        display: grid;
+        grid-template-columns: repeat(3, 1fr);
+        gap: 34px;
+      }
+
+      @media (max-width: 820px) {
+        body {
+          font-size: 16px;
+        }
+        .bar {
+          padding: 14px 18px;
+        }
+        .nav {
+          gap: 14px;
+        }
+        .wrap {
+          padding: 52px 18px;
+        }
+        .opener {
+          padding: 80px 18px 70px;
+        }
+        .stats,
+        .grid2,
+        .quotes,
+        .tries,
+        .ab,
+        .facts {
+          grid-template-columns: 1fr;
+        }
+        .finding,
+        .finding.flip {
+          grid-template-columns: 1fr;
+        }
+        .finding.flip figure {
+          order: 0;
+        }
+        .size-row {
+          grid-template-columns: 110px 1fr 56px;
+        }
+        .embed iframe {
+          height: 720px;
+        }
+        .opener.hero {
+          padding: 64px 18px 48px;
+        }
+        .v-row {
+          grid-template-columns: 1fr auto;
+          gap: 4px 14px;
+        }
+        .v-type {
+          justify-self: start;
+          grid-column: 1/-1;
+        }
+        .v-as {
+          display: none;
+        }
+        .scope {
+          grid-template-columns: 1fr 1fr;
+          gap: 18px;
+        }
+        .minute,
+        .built,
+        .feature,
+        .i-row,
+        .types,
+        .theme-list,
+        .limits,
+        .grid3,
+        .tries.four {
+          grid-template-columns: 1fr;
+        }
+        .i-row {
+          gap: 12px;
+        }
+      }
+    </style>
+  </head>
+
+  <body>
+    <script>
+      const LINKS = {
+        dashboard: "https://runwaydashboard.streamlit.app/",
+        video:
+          "https://drive.google.com/file/d/16SM2Rt0xqzgl8frI74vX2OJumOP1MSct/preview",
+        github: "",
+      };
+    </script>
+
+    <header class="bar">
+      <a class="brand" href="#brief">READING THE RUNWAY</a>
+      <nav class="nav" aria-label="Chapters">
+        <a href="#brief">The Brief</a>
+        <a href="#data">The Data</a>
+        <a href="#findings">The Findings</a>
+        <a href="#explore">Explore</a>
+        <a href="#test">A/B Test</a>
+        <a href="#next">What's Next</a>
+      </nav>
+    </header>
+
+    <main>
+      <!-- ================= 1. THE BRIEF ================= -->
+      <section class="chapter" id="brief">
+        <div class="opener">
+          <div class="kick"></div>
+          <h1>
+            How does Vogue Runway tell different stories of luxury fashion?
+          </h1>
+          <p class="dek">
+            I compared how Vogue Runway reviews couture, ready-to-wear, menswear
+            and pre-collections, across 37 years of reviews.
+          </p>
+        </div>
+
+        <div class="wrap">
+          <div class="kick">Overview</div>
+          <div class="intro">
+            <div class="i-row">
+              <div class="i-lbl"><span>01</span>The topic</div>
+              <div class="i-body">
+                Vogue Runway is where luxury fashion gets reviewed. Almost every
+                major show, from Paris couture to resort, gets a written review
+                that shapes how the collection is remembered. This project looks
+                at how those reviews are written: which collections get covered,
+                how much space each gets, and what language critics use.
+              </div>
+            </div>
+            <div class="i-row">
+              <div class="i-lbl"><span>02</span>Who is this for</div>
+              <div class="i-body">
+                <ul class="aud">
+                  <li>
+                    <b>Fashion editors</b> who want to see which stories each
+                    type of collection usually gets.
+                  </li>
+                  <li>
+                    <b>PR teams</b> who want to anticipate how a collection is
+                    likely to be written about.
+                  </li>
+                  <li>
+                    <b>Fashion students</b> learning the vocabulary of fashion
+                    criticism.
+                  </li>
+                  <li>
+                    <b>Anyone curious about fashion</b>, even with no
+                    background, who wants to see how the industry talks about
+                    its own clothes.
+                  </li>
+                </ul>
+              </div>
+            </div>
+            <div class="i-row">
+              <div class="i-lbl"><span>03</span>The dataset</div>
+              <div class="i-body">
+                <p>
+                  <b>FashionDB</b> on Hugging Face (<a
+                    href="https://huggingface.co/datasets/traopia/FashionDB"
+                    target="_blank"
+                    rel="noopener"
+                    >traopia/FashionDB</a
+                  >), collected from Vogue Runway. Each row is one show: its
+                  house, season, collection type, reviewer, runway photos and
+                  the full written review.
+                </p>
+                <div class="mini-stats">
+                  <div><b>13,983</b><span>reviewed shows</span></div>
+                  <div><b>380</b><span>fashion houses</span></div>
+                  <div><b>1988–2025</b><span>years covered</span></div>
+                </div>
+              </div>
+            </div>
+            <div class="i-row">
+              <div class="i-lbl"><span>04</span>My questions</div>
+              <div class="i-body">
+                <p class="big-q">
+                  How do Vogue Runway's reviews differ across couture,
+                  ready-to-wear, menswear and pre-collections?
+                </p>
+                <ol class="subq">
+                  <li>
+                    How is coverage distributed across collection types over
+                    time?
+                  </li>
+                  <li>How does review length vary across collection types?</li>
+                  <li>Which themes set the collection apart?</li>
+                </ol>
+              </div>
+            </div>
+          </div>
+
+          <div class="obj">
+            <div class="kick strong">Objectives</div>
+            <p>
+              I want to find out whether Vogue Runway covers and describes
+              collection types differently, using both numbers and the review
+              text.
+            </p>
+          </div>
+
+          <div style="margin-top: 90px">
+            <div class="kick strong">About the four collection types</div>
+            <div class="types">
+              <div style="--c: var(--couture)">
+                <h3>Couture</h3>
+                <p>
+                  Made-to-measure clothes from the Paris couture houses, shown
+                  twice a year.
+                </p>
+                <div class="t-n">461 shows · 31 houses</div>
+              </div>
+              <div style="--c: var(--rtw)">
+                <h3>Ready-to-Wear</h3>
+                <p>
+                  The main womenswear collections, shown each spring and fall.
+                </p>
+                <div class="t-n">7,992 shows · 359 houses</div>
+              </div>
+              <div style="--c: var(--menswear)">
+                <h3>Menswear</h3>
+                <p>
+                  Men's collections, shown on their own calendar each season.
+                </p>
+                <div class="t-n">2,618 shows · 169 houses</div>
+              </div>
+              <div style="--c: var(--pre)">
+                <h3>Pre-Collections</h3>
+                <p>
+                  Resort and pre-fall: smaller collections shown between the
+                  main seasons.
+                </p>
+                <div class="t-n">2,912 shows · 255 houses</div>
+              </div>
+            </div>
+          </div>
+
+          <div style="margin-top: 96px">
+            <div class="kick">What I built</div>
+            <h2>Four parts, one story</h2>
+            <a class="feature" href="#explore">
+              <figure>
+                <img
+                  src="images/dashboard.png"
+                  alt="Screenshot of the Reading the Runway dashboard"
+                />
+                <div class="placeholder">
+                  Add docs/images/dashboard.png<br />(a screenshot of your
+                  Streamlit app)
+                </div>
+              </figure>
+              <div>
+                <div class="qnum">Live dashboard</div>
+                <h3>Filter 13,983 reviews yourself</h3>
+                <p>
+                  A Streamlit app that answers each question on its own page.
+                  Pick collection types, years and houses, and read real review
+                  excerpts for any theme.
+                </p>
+                <span class="go">Click to View →</span>
+              </div>
+            </a>
+            <div class="built">
+              <a href="#data"
+                ><div class="qnum">01 · The data</div>
+                <h3>From 14,287 shows to 13,983</h3>
+                <p>
+                  Where the reviews come from, how I cleaned them, and what's
+                  missing.
+                </p>
+                <span class="go">→</span></a
+              >
+              <a href="#findings"
+                ><div class="qnum">02 · The analysis</div>
+                <h3>Three questions, three charts</h3>
+                <p>
+                  Coverage, review length and themes, checked against 40 reviews
+                  I read.
+                </p>
+                <span class="go">→</span></a
+              >
+              <a href="#test"
+                ><div class="qnum">03 · The A/B test</div>
+                <h3>A/B test</h3>
+                <p>
+                  A proposed test of theme-based browsing on the Vogue Runway
+                  archive.
+                </p>
+                <span class="go">→</span></a
+              >
+            </div>
+          </div>
+
+          <a class="next" href="#data">Next chapter: The Data →</a>
+        </div>
+      </section>
+
+      <!-- ================= 2. THE DATA ================= -->
+      <section class="chapter" id="data">
+        <div class="opener short">
+          <h1>The Data</h1>
+          <p class="dek">
+            37 years of Vogue Runway reviews, from 380 fashion houses.
+          </p>
+        </div>
+
+        <div class="wrap">
+          <div class="grid2">
+            <div class="card">
+              <h3>Source</h3>
+              <p>
+                <b>FashionDB</b> on Hugging Face (<a
+                  href="https://huggingface.co/datasets/traopia/FashionDB"
+                  target="_blank"
+                  rel="noopener"
+                  >traopia/FashionDB</a
+                >). The dataset's authors collected it from Vogue Runway's
+                website; their code is on
+                <a
+                  href="https://github.com/traopia/FashionDB"
+                  target="_blank"
+                  rel="noopener"
+                  >GitHub</a
+                >.
+              </p>
+              <p>
+                <b>One row</b> is one fashion show as covered on Vogue Runway:
+                its house, season, collection type, reviewer, runway photos and
+                the written review.
+              </p>
+            </div>
+            <div class="card">
+              <h3>What I measured</h3>
+              <ul class="clean">
+                <li>
+                  <b>Numbers:</b> year, review length in words, number of runway
+                  photos
+                </li>
+                <li>
+                  <b>Categories:</b> fashion house, collection type, season,
+                  reviewer
+                </li>
+                <li><b>Text:</b> the written review of each show</li>
+              </ul>
+            </div>
+          </div>
+
+          <div style="margin-top: 80px">
+            <div class="kick">Cleaning</div>
+            <h2>From 14,287 shows to 13,983</h2>
+            <div class="funnel">
+              <div>
+                <div class="num">14,287</div>
+                <div class="lbl">shows in FashionDB</div>
+              </div>
+              <div class="arrow">→</div>
+              <div>
+                <div class="num">14,064</div>
+                <div class="lbl">
+                  after removing 223 bridal &amp; regional fashion week shows
+                </div>
+              </div>
+              <div class="arrow">→</div>
+              <div>
+                <div class="num">13,983</div>
+                <div class="lbl">
+                  after removing 81 menswear shows with no real review
+                </div>
+              </div>
+            </div>
+            <p class="lead" style="margin-top: 34px">
+              The dataset had no single column for collection type: resort and
+              pre-fall were only labelled in the season column. I combined the
+              two, then merged resort and pre-fall into <b>pre-collections</b>,
+              since they behaved almost identically.
+            </p>
+          </div>
+
+          <div style="margin-top: 90px">
+            <div class="kick">Reading the text</div>
+            <h2>How I tagged themes</h2>
+            <p class="lead">
+              I wrote a short word list for each theme. A review counts toward a
+              theme if it uses any of those words at least once. Then I read 40
+              reviews, 10 from each collection type, to check that the tags made
+              sense.
+            </p>
+            <div class="theme-list">
+              <div>
+                <h3>Unique Craft</h3>
+                <p>
+                  embroider, handmade, hand-, atelier, craft, artisan, beaded,
+                  beading
+                </p>
+              </div>
+              <div>
+                <h3>Sharp Tailoring</h3>
+                <p>tailor, suiting, blazer, lapel, pinstripe, trouser</p>
+              </div>
+              <div>
+                <h3>Romantic</h3>
+                <p>romantic, romance, dream, fairy, ethereal, delicate</p>
+              </div>
+              <div>
+                <h3>Everyday Dressing</h3>
+                <p>
+                  wearable, customer, everyday, practical, wardrobe, commercial
+                </p>
+              </div>
+              <div>
+                <h3>House Heritage</h3>
+                <p>archive, heritage, founder, legacy, tradition, house code</p>
+              </div>
+              <div>
+                <h3>Experimental</h3>
+                <p>
+                  experiment, avant-garde, conceptual, deconstruct, radical,
+                  innovat
+                </p>
+              </div>
+              <div>
+                <h3>Clientele</h3>
+                <p>
+                  client
+                  <span class="note"
+                    >(split out after I found couture uses it for private
+                    buyers)</span
+                  >
+                </p>
+              </div>
+            </div>
+            <p class="pop">
+              Words match at the start, so “tailor” also catches “tailored” and
+              “tailoring.”
+            </p>
+          </div>
+
+          <div style="margin-top: 90px">
+            <div class="kick strong">Limitations</div>
+            <div class="limits">
+              <ul class="clean">
+                <li>
+                  <b>Collection type is split across two columns.</b> The
+                  dataset didn't have one column saying which kind of collection
+                  each show was, so I had to build it myself. The category
+                  column had couture, ready-to-wear and menswear. The season
+                  column was the only place that said resort or pre-fall. For
+                  those shows, category was left empty.
+                </li>
+                <li>
+                  <b>Missing reviews and reviewers.</b> 81 menswear shows have
+                  no real review, and 308 shows have no reviewer named.
+                </li>
+                <li>
+                  <b>Some shows removed.</b> I removed 223 bridal and regional
+                  fashion week shows because they are outside my question.
+                </li>
+                <li>
+                  <b>Very uneven groups.</b> There are 7,992 ready-to-wear shows
+                  but only 461 couture.
+                </li>
+                <li>
+                  <b>Not all of fashion.</b> Only the houses in FashionDB that
+                  Vogue covered, not all of fashion or everything Vogue has
+                  published.
+                </li>
+                <li>
+                  <b>Words, not clothes.</b> A show counted as
+                  <i>romantic</i> means the critic used a romantic word, not
+                  that the clothes look romantic.
+                </li>
+              </ul>
+              <ul class="clean">
+                <li>
+                  <b>Keyword matching misses meaning.</b> One review counted as
+                  craft for the word “crafty”, while describing a move away from
+                  that look.
+                </li>
+                <li>
+                  <b>Coverage changes over time.</b> Coverage falls after 2016
+                  and drops sharply in 2025. The 2025 drop is because the data
+                  was collected partway through the year. The 2018
+                  pre-collections gap appears to be missing data. The decline
+                  around 2020 may partly reflect real changes like the pandemic,
+                  but it also reflects that FashionDB follows a fixed list of
+                  houses, so newer labels are missing.
+                </li>
+                <li>
+                  <b>Why reviews differ is unknown.</b> Length and wording could
+                  depend on the critic, the year or the house, not only the
+                  collection type.
+                </li>
+                <li>
+                  <b>Photos are a rough measure.</b> Photo counts stand in for
+                  the number of looks and can include detail shots.
+                </li>
+                <li>
+                  <b>Copyrighted text.</b> The reviews are Vogue's copyrighted
+                  writing, so this project loads them from Hugging Face instead
+                  of republishing them.
+                </li>
+              </ul>
+            </div>
+          </div>
+
+          <a class="next" href="#findings">Next chapter: The Findings →</a>
+        </div>
+      </section>
+
+      <!-- ================= 3. THE FINDINGS ================= -->
+      <section class="chapter" id="findings">
+        <div class="opener short">
+          <h1>The Findings</h1>
+          <p class="dek">
+            Three questions, four charts, and what the reviews actually say.
+          </p>
+        </div>
+
+        <div class="wrap">
+          <!-- Put your chart images in docs/images/ with these exact names. -->
+          <div class="kick strong">Quantitative findings</div>
+          <h2>Coverage and review length</h2>
+          <div class="finding">
+            <figure>
+              <img
+                src="images/coverage.png"
+                alt="Line chart of reviewed shows per year by collection type, 1988 to 2025"
+              />
+              <div class="placeholder">Add docs/images/coverage.png</div>
+              <figcaption>
+                Vogue Runway coverage by collection type, 1988–2025.
+              </figcaption>
+            </figure>
+            <div>
+              <div class="qnum">Question 1</div>
+              <h3>
+                How is coverage distributed across collection types over time?
+              </h3>
+              <div class="how">What it shows</div>
+              <p>Reviewed shows per year for each collection type.</p>
+              <div class="how">Key finding</div>
+              <p class="key">
+                Ready-to-wear is covered far more than any other type, and
+                coverage falls after 2016.
+              </p>
+              <p class="ctx">
+                The 2025 drop is because the data was collected partway through
+                the year, and the 2018 pre-collections gap is missing data.
+              </p>
+            </div>
+          </div>
+
+          <div class="finding flip">
+            <figure>
+              <img
+                src="images/top_houses.png"
+                alt="Stacked bar chart of the 15 most-covered fashion houses, split by collection type"
+              />
+              <div class="placeholder">Add docs/images/top_houses.png</div>
+              <figcaption>
+                The 15 most-covered fashion houses, by collection type.
+              </figcaption>
+            </figure>
+            <div>
+              <div class="qnum">Question 1, continued</div>
+              <h3>Which houses supply the reviews?</h3>
+              <div class="how">What it shows</div>
+              <p>
+                The 15 houses with the most reviewed shows, split by collection
+                type.
+              </p>
+              <div class="how">Key finding</div>
+              These 15 houses account for 13.4% of the 13,983 reviewed shows.
+              <p class="ctx">
+                So a small group of houses shapes much of the data.
+              </p>
+            </div>
+          </div>
+
+          <div class="finding">
+            <figure>
+              <img
+                src="images/review_length.png"
+                alt="Box plot of review length in words by collection type"
+              />
+              <div class="placeholder">Add docs/images/review_length.png</div>
+              <figcaption>
+                Review length by collection type. Axis cut at the 99th
+                percentile.
+              </figcaption>
+            </figure>
+            <div>
+              <div class="qnum">Question 2</div>
+              <h3>How does review length vary across collection types?</h3>
+              <div class="how">What it shows</div>
+              <p>
+                Review length in words for each type. The line in each box is
+                the typical (median) review.
+              </p>
+              <div class="how">Key finding</div>
+              <p class="key">
+                Couture and menswear get the most space. Pre-collection reviews
+                are about 30% shorter.
+              </p>
+              <p class="ctx">
+                Typical review: couture 306 words, menswear 296, ready-to-wear
+                269, pre-collections about 237.
+              </p>
+            </div>
+          </div>
+
+          <div
+            style="
+              margin-top: 40px;
+              padding-top: 70px;
+              border-top: 1px solid var(--rule);
+            "
+          >
+            <div class="kick strong">Qualitative findings</div>
+            <div class="qnum">Question 3</div>
+
+            <h2>What themes set the types apart?</h2>
+            <div class="finding" style="border-top: 0; padding-top: 20px">
+              <figure>
+                <img
+                  src="images/heatmap.png"
+                  alt="Heatmap of the share of reviews mentioning each theme, by collection type"
+                />
+                <div class="placeholder">Add docs/images/heatmap.png</div>
+                <figcaption>
+                  Share of reviews mentioning each theme. All 13,983 reviews.
+                </figcaption>
+              </figure>
+              <div>
+                <h3>What themes set the collection apart?</h3>
+                <div class="how">What it shows</div>
+                <p>
+                  The share of reviews in each type that use a theme's words.
+                  Darker means more common.
+                </p>
+                <div class="how">Key finding</div>
+                <p class="key">
+                  Couture is written as craft, menswear as cut, and
+                  pre-collections as the customer.
+                </p>
+                <p class="ctx">
+                  Craft words appear in 71% of couture reviews, tailoring in 63%
+                  of menswear, and everyday dressing in 34% of pre-collections.
+                </p>
+              </div>
+            </div>
+
+            <p class="lead" style="margin-top: 50px">
+              To check the keywords, I read 40 random reviews, 10 from each
+              type.
+            </p>
+            <div class="quotes" style="margin-top: 34px">
+              <div>
+                <div class="how">Craft in couture</div>
+                <blockquote>
+                  “…long, flowy chiffon gowns traced with lines of crystal and
+                  sequin embroidery.”
+                </blockquote>
+                <div class="cite">Elie Saab, 2005 · record 5218</div>
+              </div>
+              <div>
+                <div class="how">Tailoring in menswear</div>
+                <blockquote>
+                  “…a navy pinstripe suit and an elegantly elongated black
+                  overcoat…”
+                </blockquote>
+                <div class="cite">Balenciaga, 2007 · record 1712</div>
+              </div>
+              <div>
+                <div class="how">Everyday dressing in pre-collections</div>
+                <blockquote>
+                  “…something accessible… to pull in the next generation of
+                  customers.”
+                </blockquote>
+                <div class="cite">Gucci, 2017 · record 6883</div>
+              </div>
+            </div>
+          </div>
+
+          <div class="grid3" style="margin-top: 80px">
+            <div class="card">
+              <h3>Not everything fits</h3>
+              <p>
+                4 of the 10 couture reviews had no craft words, and one
+                pre-collection review did: “a stunning silk wrap gown with
+                silver beaded trim” (Gucci, 2011).
+              </p>
+            </div>
+            <div class="card">
+              <h3>Checking one keyword</h3>
+              <p>
+                In couture, “client” means a private buyer, not an everyday
+                customer. Taking it out of everyday dressing changed couture
+                from 37% to 19%.
+              </p>
+            </div>
+            <div class="card">
+              <h3>Revisiting a choice</h3>
+              <p>
+                I merged resort and pre-fall. Their typical reviews are almost
+                the same length (236 and 238 words), so merging doesn't change
+                the finding.
+              </p>
+            </div>
+          </div>
+
+          <a class="next" href="#explore">Next chapter: Explore →</a>
+        </div>
+      </section>
+
+      <!-- ================= 4. EXPLORE ================= -->
+      <section class="chapter" id="explore">
+        <div class="opener short">
+          <h1>Explore</h1>
+          <p class="dek">
+            A short walkthrough, then the live dashboard to try yourself.
+          </p>
+        </div>
+
+        <div class="wrap">
+          <div class="kick">Walkthrough</div>
+          <h2>A short tour</h2>
+          <div class="embed video narrow" id="video-slot">
+            <div
+              class="placeholder show"
+              style="height: 100%; aspect-ratio: auto"
+            ></div>
+          </div>
+
+          <div style="margin-top: 80px">
+            <div class="kick">The dashboard</div>
+            <h2>Filter it yourself</h2>
+            <p class="lead">
+              Each page answers one question. Use the filters under each
+              question to change the collection types and years.
+            </p>
+            <div class="embed" id="dash-slot" style="margin-top: 34px">
+              <div class="placeholder show" style="aspect-ratio: 16/9">
+                Add your Streamlit address in LINKS.dashboard at the top of this
+                file
+              </div>
+            </div>
+            <p class="pop">
+              If the dashboard shows a “wake up” button, click it and wait about
+              30 seconds: free apps sleep when nobody is using them.
+              <span id="dash-open"></span>
+            </p>
+          </div>
+
+          <a class="next" href="#test">Next chapter: A/B Test →</a>
+        </div>
+      </section>
+
+      <!-- ================= 5. THE TEST ================= -->
+      <section class="chapter" id="test">
+        <div class="opener short">
+          <h1>A/B Test</h1>
+          <p class="dek">
+            If reviews already describe collections through themes, could those
+            themes help new readers explore?
+          </p>
+        </div>
+
+        <div class="wrap">
+          <div class="kick strong">The opportunity</div>
+          <p class="lead" style="margin-top: 16px">
+            My analysis found recurring themes that differ by collection type,
+            but Vogue Runway's archive is browsed by designer search, an
+            alphabetical list and the fashion calendar. That works best for
+            people who already know which designers to look for.
+          </p>
+          <p class="lead">
+            The analysis shows these themes exist in the reviews. It can't show
+            whether visitors would use them to browse. That's what this test
+            would measure.
+          </p>
+
+          <div class="grid2" style="margin-top: 56px">
+            <div class="card">
+              <h3>Version A · today</h3>
+              <p>
+                The current Fall 2026 Ready-to-Wear archive page: a grid of
+                collections, designer search and an alphabetical list of houses.
+              </p>
+            </div>
+            <div class="card">
+              <h3>Version B · one change</h3>
+              <p>
+                The same page with one new row above the grid, “Explore by
+                Collection Story.” Picking a theme (Unique Craft, Sharp
+                Tailoring, Romantic, Everyday Dressing, House Heritage) filters
+                the collection cards.
+              </p>
+            </div>
+          </div>
+
+          <div style="margin-top: 80px">
+            <div class="kick strong">Prediction</div>
+            <p class="predict" style="margin-top: 16px">
+              “Adding theme-based browsing will lead first-time visitors to
+              explore more runway collections, because they can begin with an
+              aesthetic they recognize rather than needing to know a particular
+              designer, season or category.”
+            </p>
+          </div>
+
+          <div class="facts" style="margin-top: 80px">
+            <div>
+              <h3>Who</h3>
+              <p>
+                First-time archive visitors (no visit in 90 days), randomly
+                split 50/50 and kept in the same version.
+              </p>
+            </div>
+            <div>
+              <h3>Main measure</h3>
+              <p>
+                Share of visitors who open 3+ different collections within 7
+                days.
+              </p>
+            </div>
+            <div>
+              <h3>Success</h3>
+              <p>
+                At least 5 percentage points higher in B, enough to justify
+                maintaining the theme labels.
+              </p>
+            </div>
+            <div>
+              <h3>Watch for</h3>
+              <p>
+                The 14-day return rate. B could boost clicks without visitors
+                finding what they want.
+              </p>
+            </div>
+          </div>
+
+          <div class="grid2" style="margin-top: 70px">
+            <div class="card">
+              <h3>What could mislead</h3>
+              <ul class="clean">
+                <li>
+                  People may click the new row just because it's eye-catching.
+                </li>
+                <li>
+                  Theme labels may be too broad. Editors would check a sample
+                  before launch.
+                </li>
+                <li>
+                  Results may not apply to fashion experts, who may prefer
+                  browsing by designer.
+                </li>
+              </ul>
+            </div>
+            <div class="card">
+              <h3>Decision</h3>
+              <ul class="clean">
+                <li>
+                  <b>Adopt B</b> if exploration rises without lowering the
+                  return rate.
+                </li>
+                <li>
+                  <b>Revise and retest</b> if exploration rises but the return
+                  rate falls.
+                </li>
+                <li><b>Keep A</b> if B shows no meaningful improvement.</li>
+              </ul>
+            </div>
+          </div>
+
+          <a class="next" href="#next">Next chapter: What's Next →</a>
+        </div>
+      </section>
+
+      <!-- ================= 6. WHAT'S NEXT ================= -->
+      <section class="chapter" id="next">
+        <div class="opener short">
+          <h1>What's Next</h1>
+          <p class="dek">
+            What I can conclude, what it means, and where it could go.
+          </p>
+        </div>
+
+        <div class="wrap">
+          <div class="grid2">
+            <div class="card">
+              <h3>What I can conclude</h3>
+              <ul class="clean">
+                <li>
+                  Vogue Runway uses a different vocabulary for each collection
+                  type: craft for couture, cut for menswear, the customer for
+                  pre-collections.
+                </li>
+                <li>
+                  Couture and menswear get more space than pre-collections.
+                </li>
+                <li>
+                  These are patterns in the writing, not proof of why they
+                  exist.
+                </li>
+              </ul>
+            </div>
+            <div class="card">
+              <h3>Why it matters</h3>
+              <ul class="clean">
+                <li>
+                  <b>Editors</b> can see which stories each collection type
+                  tends to get, and which it rarely does.
+                </li>
+                <li>
+                  <b>PR teams</b> can anticipate how a collection is likely to
+                  be framed.
+                </li>
+                <li>
+                  <b>Students</b> get a vocabulary map of how fashion is written
+                  about.
+                </li>
+              </ul>
+            </div>
+          </div>
+
+          <div class="narrow" style="margin-top: 56px">
+            <div class="card">
+              <h3>Further research</h3>
+              <ul class="clean">
+                <li>
+                  Compare reviews by the same critic across collection types, to
+                  separate critic from type.
+                </li>
+                <li>
+                  Add newer houses missing from FashionDB, and other
+                  publications, to see if the pattern holds.
+                </li>
+                <li>Run the A/B test with real Vogue Runway visitors.</li>
+              </ul>
+            </div>
+          </div>
+
+          <a class="next" href="#brief">Back to the beginning ↑</a>
+        </div>
+      </section>
+    </main>
+
+    <footer>
+      <div class="cols">
+        <div>
+          READING THE RUNWAY · Rachel Chen<br />DESIGNTK 530 · Fall 2026
+        </div>
+        <div>
+          Data:
+          <a
+            href="https://huggingface.co/datasets/traopia/FashionDB"
+            target="_blank"
+            rel="noopener"
+            >FashionDB (Hugging Face)</a
+          >
+          · reviews and photos © Vogue Runway<br />
+        </div>
+      </div>
+    </footer>
+
+    <script>
+      /* ----- Chapter switching: the address bar (#brief, #data…) decides which chapter shows ----- */
+      const chapters = [...document.querySelectorAll(".chapter")];
+      const navLinks = [...document.querySelectorAll(".nav a")];
+      function showChapter() {
+        const id = (location.hash || "#brief").slice(1);
+        const target = chapters.find((c) => c.id === id) || chapters[0];
+        chapters.forEach((c) => c.classList.toggle("on", c === target));
+        navLinks.forEach((a) => {
+          if (a.getAttribute("href") === "#" + target.id)
+            a.setAttribute("aria-current", "page");
+          else a.removeAttribute("aria-current");
+        });
+        window.scrollTo(0, 0);
+      }
+      window.addEventListener("hashchange", showChapter);
+      showChapter();
+
+      /* ----- Missing chart images show a labelled placeholder instead of a broken icon ----- */
+      document.querySelectorAll(".finding img, .feature img").forEach((img) => {
+        const swap = () => {
+          img.style.display = "none";
+          img.nextElementSibling.classList.add("show");
+        };
+        if (img.complete && img.naturalWidth === 0) swap();
+        else img.addEventListener("error", swap);
+      });
+
+      /* ----- Fill in the dashboard, video and GitHub links from LINKS ----- */
+      if (LINKS.dashboard) {
+        const url = LINKS.dashboard.replace(/\/$/, "") + "/?embed=true";
+        document.getElementById("dash-slot").innerHTML =
+          `<iframe src="${url}" title="Reading the Runway dashboard" loading="lazy"></iframe>`;
+        document.getElementById("dash-open").innerHTML =
+          ` <a href="${LINKS.dashboard}" target="_blank" rel="noopener">Open the dashboard in a new tab ↗</a>`;
+
+        // Live preview in The Brief: the app at desktop width, scaled to fit the card
+        const fig = document.querySelector(".feature figure");
+        fig.classList.add("live");
+        fig.innerHTML = `<iframe src="${url}" title="Live preview of the dashboard" tabindex="-1" aria-hidden="true" loading="lazy"></iframe>`;
+        const frame = fig.querySelector("iframe");
+        const fit = () =>
+          (frame.style.transform = `scale(${fig.clientWidth / 1280})`);
+        new ResizeObserver(fit).observe(fig);
+        fit();
+
+        // "Click to View" opens the dashboard full screen; the app only loads on first open
+        const dlg = document.createElement("dialog");
+        dlg.className = "dash-full";
+        dlg.setAttribute("aria-label", "Reading the Runway dashboard");
+        dlg.innerHTML =
+          `<div class="dash-bar"><a href="${LINKS.dashboard}" target="_blank" rel="noopener">Open in new tab ↗</a>` +
+          `<button type="button" autofocus>Close ✕</button></div><iframe title="Reading the Runway dashboard"></iframe>`;
+        document.body.appendChild(dlg);
+        const full = dlg.querySelector("iframe");
+        dlg
+          .querySelector("button")
+          .addEventListener("click", () => dlg.close());
+        dlg.addEventListener(
+          "close",
+          () => (document.body.style.overflow = ""),
+        );
+        document.querySelector(".feature").addEventListener("click", (e) => {
+          if (typeof dlg.showModal !== "function") return; // very old browsers: fall back to #explore
+          e.preventDefault();
+          if (!full.src) full.src = url;
+          document.body.style.overflow = "hidden";
+          dlg.showModal();
+        });
+      }
+      if (LINKS.video) {
+        document.getElementById("video-slot").innerHTML =
+          `<iframe src="${LINKS.video}" title="Dashboard walkthrough" allow="autoplay; fullscreen" allowfullscreen loading="lazy"></iframe>`;
+      }
+      if (LINKS.github) {
+        document.getElementById("gh-link").innerHTML =
+          `<a href="${LINKS.github}" target="_blank" rel="noopener">code on GitHub</a>`;
+      }
+    </script>
+  </body>
+</html>

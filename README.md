@@ -1,23 +1,43 @@
-# The Runway Index — dashboard
+# Reading the Runway
 
-An editorial Streamlit dashboard of 13,983 Vogue Runway reviews (FashionDB, 1988–2025).
+How Vogue Runway tells different stories of luxury fashion: a Streamlit dashboard and project webpage built on 13,983 Vogue Runway reviews (FashionDB, 1988–2025).
 
-## Files
-- `app.py` — the dashboard (five tabs: The Story, Four Collections, Discover by Theme, The Evidence, Notes & Limits)
-- `runway_data.py` — data loading, theme tagging and quote extraction (same keyword lists as the notebook)
-- `requirements.txt` — Python packages
-- `.streamlit/config.toml` — colours and fonts
-- `fashiondb_vogue_reviews_clean.csv` — the cleaned data exported from the notebook (add this yourself)
+- **Live dashboard:** https://YOUR-APP.streamlit.app
+- **Project webpage:** https://YOUR-USERNAME.github.io/YOUR-REPO/
 
-## How to open it
-1. Put `fashiondb_vogue_reviews_clean.csv` (exported from the notebook) in this folder, next to `app.py`.
-2. Open a terminal in this folder and install the packages:
+## What's in this repo
+| Path | What it is |
+|---|---|
+| `app.py` | The Streamlit dashboard (pages: The Story, Coverage, Review Length, Themes, Notes & Limits) |
+| `runway_data.py` | Data loading, cleaning, theme tagging and quote extraction (same steps and keyword lists as the notebook) |
+| `requirements.txt` | Python packages the dashboard needs |
+| `.streamlit/config.toml` | Theme colours and settings |
+| `static/fonts/` | Fonts used by the dashboard |
+| `docs/` | The project webpage, published with GitHub Pages (`docs/index.html`, chart images in `docs/images/`) |
+
+## Data
+The dashboard downloads FashionDB directly from Hugging Face
+(`hf://datasets/traopia/FashionDB/data_vogue_final.parquet`) and repeats the notebook's cleaning steps, so no data file is needed.
+The cleaned CSV is not included because the reviews are Vogue's copyrighted writing.
+
+If you have the notebook's export (`fashiondb_vogue_reviews_clean.csv`), you can place it next to `app.py` and the dashboard will use it instead of downloading.
+
+## How to run the dashboard
+Requires Python 3.10 or newer and an internet connection.
+
+1. Open a terminal in this folder.
+2. (Optional) Create a virtual environment:
+   `python -m venv .venv` then `source .venv/bin/activate` (Mac) or `.venv\Scripts\activate` (Windows)
+3. Install the packages:
    `pip install -r requirements.txt`
-3. Start the dashboard:
+4. Start the dashboard:
    `streamlit run app.py`
-4. It opens in your browser at http://localhost:8501. Use full-screen (F11 / Ctrl+Cmd+F) when presenting.
+5. It opens in your browser at http://localhost:8501. The first load takes a little longer while the data downloads.
+
+## How to view the webpage locally
+Open `docs/index.html` in a browser. The embedded dashboard and video need an internet connection.
 
 ## Notes
-- Runway photos appear only if the CSV includes the `cover_image_url` column. Without it, cards show the house name instead.
-- Photos load from Vogue's servers and need an internet connection. Photos and review text © Vogue Runway; every card links to the original review.
-- The dashboard is an independent student project and is not affiliated with Vogue or Condé Nast.
+- Runway photos and review text © Vogue Runway; every review card links to the original review.
+- An independent student project for DESIGNTK 530, not affiliated with Vogue or Condé Nast.
+- AI assistance was used for code and drafting; see the project notebook for details.
